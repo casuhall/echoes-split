@@ -1,0 +1,27 @@
+{
+  "name": "echoes-split",
+  "version": "1.0.0",
+  "description": "Distribution de butins entre membre d'une équipe sous Eve Echoes",
+  "main": "index.js",
+  "scripts": {
+    "test": "jest"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/casuhall/echoes-split.git"
+  },
+  "keywords": [
+    "eve-echoes",
+    "split",
+    "loot"
+  ],
+  "author": "CasuHall",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/casuhall/echoes-split/issues"
+  },
+  "homepage": "https://github.com/casuhall/echoes-split#readme",
+  "devDependencies": {
+    "jest": "^29.7.0"
+  }
+}

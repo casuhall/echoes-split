@@ -1,40 +1,87 @@
 Objet = class {
-  nom,
-  valeur
+  ordre;
+  nom;
+  valeur;
+  quantite = 0;
+  constructor(ordre, nom, valeur) {
+    this.ordre = ordre;
+    this.nom = nom;
+    this.valeur = valeur;
+  }
+  toString(){
+    return `${this.ordre} ${this.nom} ${this.quantite}`
+  }
 };
 
 Participant = class {
-  _nom,
-  _butin = new Array<Objet>,
-  _valeure_cumulee = 0.0,
-  constructor(nom){
-    this._nom=nom;
-  },
-  attribuer(objet){
-    this._butin.push(objet);
-    this._valeur_cumulee += objet.valeure;
+
+  _nom;
+
+  _butin = new Map();
+
+  _valeur_cumulee = 0.0;
+
+  constructor(nom) {
+    if (typeof nom === 'string' || nom instanceof String)
+      this._nom = nom;
+    else throw new IllegalArgumentException("Chaine de carractères atendu.");
+  };
+
+  attribuer(objet) {
+    let b = this._butin.get(objet.nom);
+    if (!b) this._butin.set(objet.nom, b = new Objet(objet.ordre,objet.nom,objet.valeur));
+    b.quantite++;
+    this._valeur_cumulee += objet.valeur;
+  };
+
+  toString() {
+    let resultat = new String();
+    let tmp = [...this._butin.values()].sort((a,b)=> a.ordre-b.ordre);
+    tmp.forEach((v) => {
+      resultat += `${v.toString()}\n`;
+    });
+    return resultat;
   }
 };
 
 Distribution = class {
-  _participants = new Arrays<Participant>,
-  constructor (participants) {
-    this._participants.forEach( nom => _participants.push(new Participant(nom)) );
-  },
-  _pauvreParticipant(){
+
+  _participants = [];
+
+  constructor(participants) {
+    if (participants)
+      participants.forEach(nom => this._participants.push(new Participant(nom)));
+  };
+
+  _pauvreParticipant() {
     // obtention du participant ayant la valeur de butin cumulée la plus faible possible
     let pauvre;
-    _participants.forEach( p => {
-      if (!pauvre||pauvre.valeure_cumulee>p.valeure_cumulee)
+    this._participants.forEach(p => {
+      if (!pauvre || pauvre._valeur_cumulee > p._valeur_cumulee)
         pauvre = p
     });
     return pauvre;
-  },
-  distribuer(butin){
+  };
+
+  distribuer(butin) {
     // trier le butin par ordre décroissant de valeur
     let butin_trie = new Array(...butin);
-    butin_trie.sort( (a,b)=> b.valeure-a.valeure );
+    butin_trie.sort((a, b) => b.valeur - a.valeur);
     // pour chaque objet dans l'ordre, attribuer au participant le plus pauvre
-    butin_trie.forEach( objet => this._pauvreParticipant().attribuer(objet) );
-  }
-}
+    butin_trie.forEach(objet => this._pauvreParticipant().attribuer(objet));
+  };
+
+  toString() {
+    let resultat = new String();
+    this._participants.forEach(p => {
+      resultat += `
+##### ${p._nom} @ ${p._valeur_cumulee.toLocaleString()}
+
+${p.toString()}
+`
+    });
+    return resultat;
+  };
+};
+
+module.exports = { Objet, Participant, Distribution };
