@@ -1,4 +1,4 @@
-Objet = class {
+class Objet {
   ordre;
   nom;
   valeur;
@@ -8,12 +8,12 @@ Objet = class {
     this.nom = nom;
     this.valeur = valeur;
   }
-  toString(){
-    return `${this.ordre} ${this.nom} ${this.quantite}`
+  toString() {
+    return `#${this.ordre}\t${this.nom}\tx${this.quantite}`
   }
 };
 
-Participant = class {
+class Participant {
 
   _nom;
 
@@ -29,14 +29,14 @@ Participant = class {
 
   attribuer(objet) {
     let b = this._butin.get(objet.nom);
-    if (!b) this._butin.set(objet.nom, b = new Objet(objet.ordre,objet.nom,objet.valeur));
+    if (!b) this._butin.set(objet.nom, b = new Objet(objet.ordre, objet.nom, objet.valeur));
     b.quantite++;
     this._valeur_cumulee += objet.valeur;
   };
 
   toString() {
     let resultat = new String();
-    let tmp = [...this._butin.values()].sort((a,b)=> a.ordre-b.ordre);
+    let tmp = [...this._butin.values()].sort((a, b) => a.ordre - b.ordre);
     tmp.forEach((v) => {
       resultat += `${v.toString()}\n`;
     });
@@ -44,13 +44,17 @@ Participant = class {
   }
 };
 
-Distribution = class {
+class Distribution {
 
   _participants = [];
+  cagnotte = 0;
 
   constructor(participants) {
     if (participants)
-      participants.forEach(nom => this._participants.push(new Participant(nom)));
+      participants.forEach(nom => {
+        if (nom)
+          this._participants.push(new Participant(nom));
+      });
   };
 
   _pauvreParticipant() {
@@ -67,15 +71,17 @@ Distribution = class {
     // trier le butin par ordre décroissant de valeur
     let butin_trie = new Array(...butin);
     butin_trie.sort((a, b) => b.valeur - a.valeur);
-    // pour chaque objet dans l'ordre, attribuer au participant le plus pauvre
-    butin_trie.forEach(objet => this._pauvreParticipant().attribuer(objet));
+    // pour chaque objet dans l'ordre, attribuer au participant le plus pauvre et augmenter la cagnotte.
+    butin_trie.forEach(objet => {
+      this._pauvreParticipant().attribuer(objet);
+      this.cagnotte += objet.valeur;
+    });
   };
 
   toString() {
     let resultat = new String();
     this._participants.forEach(p => {
-      resultat += `
-##### ${p._nom} @ ${p._valeur_cumulee.toLocaleString()}
+      resultat += ` ##### ${p._nom} $${p._valeur_cumulee.toLocaleString()} (${(p._valeur_cumulee - (this.cagnotte / this._participants.length)).toLocaleString()})
 
 ${p.toString()}
 `
@@ -84,4 +90,4 @@ ${p.toString()}
   };
 };
 
-module.exports = { Objet, Participant, Distribution };
+export { Distribution };

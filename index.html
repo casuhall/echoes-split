@@ -1,12 +1,98 @@
-<header>
-    <script src="domain.js"></script>
-    <script>
-        
-    </script>
-</header>
+<html>
+
+<head>
+  <title>Eve Echoes - Loot Splitter</title>
+  <script type="module">
+    import { Distribution } from "./domain.js";
+    window.go = function () {
+      let participant_brut = document.getElementById("participants").value;
+      let butin_brut = document.getElementById("butin").value;
+      let loot_structuree = []
+      butin_brut.split("\n").forEach(element => {
+        let ligne = /^(\d+)\t(.+)\t(\d+)\t(.+)$/.exec(element);
+        if (ligne) {
+          let quantite = Number.parseInt(ligne[3]);
+          if (quantite == 1)
+            loot_structuree.push({ ordre: ligne[1], nom: ligne[2], valeur: Number.parseFloat(ligne[4]) })
+          else
+            for (let i = 0; i < quantite; i++) loot_structuree.push({ ordre: ligne[1], nom: ligne[2], valeur: Number.parseFloat(ligne[4]) / quantite })
+        }
+      });
+
+      let distribution = new Distribution(participant_brut.split("\n"));
+      distribution.distribuer(loot_structuree);
+      let resultat = distribution.toString();
+      document.getElementById("resultat").value = resultat;
+    } 
+  </script>
+  <style>
+    .tooltip-text {
+      visibility: hidden;
+      position: absolute;
+      z-index: 1;
+      width: 500px;
+      color: white;
+      font-size: 12px;
+      background-color: #192733;
+      border-radius: 10px;
+      padding: 10px 15px 10px 15px;
+    }
+
+    .hover-text:hover .tooltip-text {
+      visibility: visible;
+    }
+  </style>
+</head>
+
 <body>
-    <textarea name="joueurs" ></textarea>
-    <textarea name="loots" ></textarea>
-    <input type="button" value="GO" onclick=""/>
-    <p id="resultat"></p>
+  <label for="participants">Participants</label>
+  <textarea id="participants" style="width: 100%;height: 10%;" onchange="document.getElementById('go').click()" placeholder="Toto
+Titi
+Tata"></textarea>
+  <label for="butin" class="hover-text">Butin (help ?)
+    <span class="tooltip-text">Pour obtenir un listing simple de vos loots :
+      <ol>
+        <li>Assurez vous que votre butin soit dans un hangard (pas dans la soute d'un vaisseau).</li>
+        <li>Après avoir sélectionner le butin à distribuer dans le hangard, générez une liste.</li>
+      </ol>
+      <img src="images/Screenshot_2024.04.03_13.44.04.191.png" width="500px" />
+      <ol start="3">
+        <li>Enregistrer votre liste peut être un bon moyen de ne pas repartir de 0 pour la distribution, mais n'est pas
+          obligatoire.</li>
+        <li>Partagez votre liste vers votre presse papier.</li>
+      </ol>
+      <img src="images/Screenshot_2024.04.03_13.50.28.595.png" width="500px" />
+      <img src="images/Screenshot_2024.04.03_13.50.38.381.png" width="500px" />
+      <ol start="6">
+        <li>Coller le contenu de votre presse papier dans la zone de texte ci dessous.</li>
+      </ol>
+  </label>
+  <textarea id="butin" style="width: 100%;height: 30%;" onchange="document.getElementById('go').click()" placeholder="ID	Names	Quantity	Valuation 
+1	MK7 Medium Rifled Railgun	2	63568.2 
+2	MK7 Medium Snubnosed Railgun	3	196962.69 
+3	MK7 Small Missile Launcher	7	50021.72 
+4	Pithi C-Type Small Missile Launcher	3	155028530.67 
+5	MK7 Medium Missile Launcher	2	67027.54 "></textarea>
+  <input id="go" type="button" value="Distribuer" onclick="go(document)" />
+  <textarea id="resultat" style="width: 100%; height: 50%;" readonly placeholder="##### Toto $51 803 928,73 (1 891,79)
+
+#2	MK7 Medium Snubnosed Railgun	x1
+#3	MK7 Small Missile Launcher	x4
+#4	Pithi C-Type Small Missile Launcher	x1
+#5	MK7 Medium Missile Launcher	x1
+
+##### Titi $51 796 782,77 (-5 254,17)
+
+#2	MK7 Medium Snubnosed Railgun	x1
+#3	MK7 Small Missile Launcher	x3
+#4	Pithi C-Type Small Missile Launcher	x1
+#5	MK7 Medium Missile Launcher	x1
+
+##### Tata $51 805 399,32 (3 362,38)
+
+#1	MK7 Medium Rifled Railgun	x2
+#2	MK7 Medium Snubnosed Railgun	x1
+#4	Pithi C-Type Small Missile Launcher	x1"></textarea>
 </body>
+
+</html>
