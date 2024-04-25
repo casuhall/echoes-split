@@ -9,7 +9,7 @@
       let butin_brut = document.getElementById("butin").value;
       let loot_structuree = []
       butin_brut.split("\n").forEach(element => {
-        let ligne = /^(\d+)\t(.+)\t(\d+)\t(.+)$/.exec(element);
+        let ligne = /^(\d+)\s+(\S.*)\s+(\d+)\s+(\S+)\s*$/.exec(element);
         if (ligne) {
           let quantite = Number.parseInt(ligne[3]);
           if (quantite == 1)
