@@ -1,0 +1,31 @@
+{
+  "name": "echoes-split",
+  "version": "1.0.0",
+  "description": "Loot splitting for Eve Echoes",
+  "main": "domain.js",
+  "module": "domain",
+  "type": "module",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/casuhall/echoes-split.git"
+  },
+  "keywords": [
+    "EE",
+    "Eve Echoes",
+    "Loot"
+  ],
+  "author": "CasuHall",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/casuhall/echoes-split/issues"
+  },
+  "homepage": "https://github.com/casuhall/echoes-split#readme",
+  "devDependencies": {
+    "chai": "^5.2.0",
+    "mocha": "^11.1.0",
+    "nodemon": "^3.1.9"
+  }
+}

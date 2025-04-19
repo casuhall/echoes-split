@@ -5,23 +5,30 @@
   <script type="module">
     import { Distribution } from "./domain.js";
     window.go = function () {
+      // Récupération de la zone de texte "participants"
       let participant_brut = document.getElementById("participants").value;
+      // Récupération de la zone de texte "butin"
       let butin_brut = document.getElementById("butin").value;
-      let loot_structuree = []
+      // Structuration du butin
+      let loot_structuree = [];
       butin_brut.split("\n").forEach(element => {
         let ligne = /^(\d+)\s+(\S.*)\s+(\d+)\s+(\S+)\s*$/.exec(element);
         if (ligne) {
           let quantite = Number.parseInt(ligne[3]);
           if (quantite == 1)
+            // Utilisation directe de la valeur de la pile si unitaire
             loot_structuree.push({ ordre: ligne[1], nom: ligne[2], valeur: Number.parseFloat(ligne[4]) })
           else
+            // Recalcul de la valeur unitaire des objets en cas d'objets multiples dans la pile
             for (let i = 0; i < quantite; i++) loot_structuree.push({ ordre: ligne[1], nom: ligne[2], valeur: Number.parseFloat(ligne[4]) / quantite })
         }
       });
 
+      // Initialisation d'une distribution
       let distribution = new Distribution(participant_brut.split("\n"));
       distribution.distribuer(loot_structuree);
       let resultat = distribution.toString();
+      // Affectation de la distribution dans la zone de résultat
       document.getElementById("resultat").value = resultat;
     } 
   </script>
