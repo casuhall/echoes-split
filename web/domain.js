@@ -1,5 +1,5 @@
 /**
- * Représentation d'un objet
+ * Représentation d'un objet physique.
  * @class Objet
  */
 class Objet {
@@ -26,7 +26,7 @@ class Objet {
     this.valeur = valeur;
   }
   toString() {
-    return `${this.nom}\tx${this.valeur}`
+    return `${this.nom}\t$${this.valeur}`
   }
 };
 
@@ -52,26 +52,16 @@ class Pile {
   /**
    * Initialisation d'une pile d'objet
    * @param {string} nom_objet nom de l'objet dans la pile
-   * @param {number} quantite nombre d'objets empilés
    * @param {number} valeur_pile valeur totale de la pile
+   * @param {number} quantite nombre d'objets empilés
    * @memberof Pile
    */
-  constructor(nom_objet, quantite, valeur_pile) {
-    if (!nom_objet) throw new IllegalArgumentException("Il est obligatoire de fournir le nom de l'objet empilé.");
-    if (!quantite) throw new IllegalArgumentException("Il est obligatoire de fournir une quantité d'objet empilé.");
-    if (!valeur_pile) throw new IllegalArgumentException("Il est obligatoire de fournir la valeur totale de la pile.");
+  constructor(nom_objet, valeur_pile, quantite = 1) {
+    if (!nom_objet) throw new Error("Il est obligatoire de fournir le nom de l'objet empilé.");
+    if (!valeur_pile) throw new Error("Il est obligatoire de fournir la valeur totale de la pile.");
+    if (!quantite || quantite <= 0 || !Number.isInteger(quantite))
+      throw new Error("Il est obligatoire de fournir une quantité entière positive d'objet empilé.");
     this.objet = new Objet(nom_objet, valeur_pile / quantite);
-    this.quantite = quantite;
-  }
-  /**
-   * Creates an instance of Pile.
-   * @param {Object} objet
-   * @param {number} [quantite=1]
-   * @memberof Pile
-   */
-  constructor(objet, quantite = 1) {
-    if (!objet) throw new IllegalArgumentException("Il est obligatoire de fournir l'objet de base de la pile.");
-    this.objet = objet;
     this.quantite = quantite;
   }
   /**
@@ -80,7 +70,7 @@ class Pile {
    * @memberof Pile
    */
   depiler() {
-    let result = new Array(this.quantite);
+    let result = [];
     for (let i = 0; i < this.quantite; i++) result.push(this.objet);
     return result;
   }
@@ -91,14 +81,14 @@ class Pile {
    * @param {number} [quantite=1]
    * @memberof Pile
    */
-  empiler(objet,quantite = 1){
-    if (!objet) throw new IllegalArgumentException("Il est obligatoire de fournir l'objet à empiler.");
-    if (objet.nom !== this.objet.nom) throw new IllegalArgumentException("Il est impossible d'empiler des objets de nature différentes.");
-    if (objet.valeur !== this.objet.valeur) throw new IllegalArgumentException("Un même objet ne peut avoir plusieurs valeurs différentes.");
-    this.quantite+=quantite;
+  empiler(objet, quantite = 1) {
+    if (!objet) throw new Error("Il est obligatoire de fournir l'objet à empiler.");
+    if (objet.nom !== this.objet.nom) throw new Error("Il est impossible d'empiler des objets de nature différentes.");
+    if (objet.valeur !== this.objet.valeur) throw new Error("Un même objet ne peut avoir plusieurs valeurs différentes.");
+    this.quantite += quantite;
   }
   toString() {
-    return `${this.nom}\tx${this.quantite}\t${this.quantite * this.objet.valeur}`
+    return `${this.objet.nom}\tx${this.quantite}\t$${this.quantite * this.objet.valeur}`
   }
 };
 
@@ -106,6 +96,11 @@ class Participant {
 
   _nom;
 
+  /**
+   * Piles d'objets attribués au participant.
+   * @type {Map<string,Pile>}
+   * @memberof Participant
+   */
   _butin = new Map();
 
   _valeur_cumulee = 0.0;
@@ -113,22 +108,25 @@ class Participant {
   constructor(nom) {
     if (typeof nom === 'string' || nom instanceof String)
       this._nom = nom;
-    else throw new IllegalArgumentException("Chaine de carractères atendu.");
+    else throw new Error("Chaine de carractères atendu.");
   };
-
+  /**
+   * Attribuer un objet à la cagnotte du participant.
+   * @param {Objet} objet
+   * @memberof Participant
+   */
   attribuer(objet) {
-    let b = this._butin.get(objet.nom);
-    if (!b) this._butin.set(objet.nom, b = new Objet(objet.ordre, objet.nom, objet.valeur));
-    b.quantite++;
+    if (!objet) throw new Error("Objet à attribuer obligatoire.")
+    let b;
+    if (b = this._butin.get(objet.nom)) b.quantite++;
+    else this._butin.set(objet.nom, new Pile(objet.nom, objet.valeur));
     this._valeur_cumulee += objet.valeur;
   };
 
   toString() {
     let resultat = new String();
-    let tmp = [...this._butin.values()].sort((a, b) => a.ordre - b.ordre);
-    tmp.forEach((v) => {
+    for (const v of this._butin.values())
       resultat += `${v.toString()}\n`;
-    });
     return resultat;
   }
 };
@@ -152,14 +150,12 @@ class Distribution {
    * @param {Array.<string>} participants 
    */
   constructor(participants) {
-    if (participants && participants.length > 0)
-      participants.forEach(nom => {
-        if (nom)
-          this._participants.push(new Participant(nom));
-      });
-    else
-      throw new IllegalArgumentException("au moins un participant attendu");
-  };
+    if (!participants || participants.length == 0) throw new Error("au moins un participant attendu");
+    participants.forEach(nom => {
+      if (nom)
+        this._participants.push(new Participant(nom));
+    });
+  }
 
   /**
    * Obtention du participant possédant le butin distribué de plus faible valeur cumulée.
@@ -180,8 +176,12 @@ class Distribution {
    * @param {Array<Pile>} butin 
    */
   distribuer(butin) {
+    if (!butin || butin.length == 0) throw new Error("Au moins un élément de butin à distribué obligatoire.");
+    // dépiler les objets
+    /** @type {Array<Objet>} */
+    let butin_trie = [];
+    butin.forEach(pile => butin_trie.push(...pile.depiler()))
     // trier le butin par ordre décroissant de valeur
-    let butin_trie = new Array(...butin);
     butin_trie.sort((a, b) => b.valeur - a.valeur);
     // pour chaque objet dans l'ordre, attribuer au participant le plus pauvre et augmenter la cagnotte.
     butin_trie.forEach(objet => {
