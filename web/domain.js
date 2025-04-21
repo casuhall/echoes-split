@@ -26,7 +26,7 @@ class Objet {
     this.valeur = valeur;
   }
   toString() {
-    return `${this.nom}\t$${this.valeur}`
+    return `${this.nom}\t$${this.valeur.toLocaleString()}`
   }
 };
 
@@ -88,7 +88,7 @@ class Pile {
     this.quantite += quantite;
   }
   toString() {
-    return `${this.objet.nom}\tx${this.quantite}\t$${this.quantite * this.objet.valeur}`
+    return `${this.objet.nom}\tx${this.quantite.toLocaleString()}\t$${(this.quantite * this.objet.valeur).toLocaleString()}`
   }
 };
 
@@ -150,7 +150,8 @@ class Distribution {
    * @param {Array.<string>} participants 
    */
   constructor(participants) {
-    if (!participants || participants.length == 0) throw new Error("au moins un participant attendu");
+    participants.filter(p => !!p);
+    if (!participants || participants.length < 2) throw new Error("Au moins deux participants attendus pour initier une distribution.");
     participants.forEach(nom => {
       if (nom)
         this._participants.push(new Participant(nom));
@@ -180,7 +181,7 @@ class Distribution {
     // dépiler les objets
     /** @type {Array<Objet>} */
     let butin_trie = [];
-    butin.forEach(pile => butin_trie.push(...pile.depiler()))
+    butin.forEach(pile => pile.depiler().forEach(objet => butin_trie.push(objet)))
     // trier le butin par ordre décroissant de valeur
     butin_trie.sort((a, b) => b.valeur - a.valeur);
     // pour chaque objet dans l'ordre, attribuer au participant le plus pauvre et augmenter la cagnotte.
